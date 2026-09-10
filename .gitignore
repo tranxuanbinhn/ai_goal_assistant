@@ -1,0 +1,4 @@
+env
+venv
+logs
+core/models/__pycache__
