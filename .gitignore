@@ -1,4 +1,5 @@
-env
-venv
-logs
-core/models/__pycache__
+.env
+.venv/
+logs/
+**/__pycache__/
+venv/
