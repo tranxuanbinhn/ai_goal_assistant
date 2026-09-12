@@ -24,35 +24,43 @@ class Generation():
         )
         response = chat.send_message(promt)
         return RoadmapOverview.model_validate_json(response.text)
-    def generatePhaseTask(self,roadMapOvervieww:RoadmapOverview, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh")-> list[PhaseTaskSchedule]:
+    def generateTask(self,roadMapOvervieww:RoadmapOverview, target_phase_number:int, target_phase_title:str,target_phase_outcome:str, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh" )-> PhaseTaskSchedule:
         now = datetime.now(ZoneInfo(timezone_str))
         current_time_str = now.strftime("%Y-%m-%d %H:%M:%S (%A)")
         road_map_json = roadMapOvervieww.model_dump_json(indent=2)
 
         prompt = f"""
-        Bạn là một chuyên gia quản lý dự án và tối ưu hóa năng suất cá nhân (Productivity & Agile Coach).
-        Nhiệm vụ của bạn là bẻ nhỏ một mục tiêu tổng thể thành một lộ trình thực thi chi tiết, khả thi và gán mốc thời gian thực tế.
-        Dữ liệu road map hiện tại {road_map_json}
-        [THÔNG TIN BỐI CẢNH]
-        - Thời điểm hiện tại: {current_time_str}
-        - Múi giờ: {timezone_str}
-        - Quỹ thời gian tối đa mỗi ngày của người dùng: {daily_hours_limit} giờ/ngày.
-        - Khung giờ học tập/làm việc ưu tiên: Bắt đầu từ khoảng {preferred_start_hour}:00 hàng ngày.
-        [NGUYÊN TẮC CHIA TASK & ƯỚC LƯỢNG THỜI GIAN]
-        1. QUY TẮC PHÂN RÃ:
-        - Chia việc theo luồng logic tuần tự: Chuẩn bị -> Thực thi -> Đánh giá/Kiểm thử.
-        - Mỗi task phải là một hành động cụ thể, bắt đầu bằng động từ (e.g., "Đọc chương 1", "Viết script kiểm thử", "Tạo file config").
-        - Không tạo task quá lớn (> 120 phút). Nếu việc cần nhiều thời gian, hãy bẻ thành Part 1, Part 2.
-        
-        2. QUY TẮC LẬP LỊCH & ĐỊNH DANH THỜI GIAN:
-        - Tất cả mốc thời gian (start_time, due_time) PHẢI bắt đầu từ tương lai (sau thời điểm hiện tại).
-        - Tổng thời lượng các task trong một ngày KHÔNG ĐƯỢC vượt quá {daily_hours_limit} giờ.
-        - Tránh xếp lịch vào khung giờ đêm (23:00 - 06:00) trừ khi được yêu cầu.
-        - Khoảng cách giữa start_time và due_time phải khớp với estimated_minutes.
-        - Định dạng bắt buộc: YYYY-MM-DDTHH:MM:SS (ví dụ: 2026-09-10T19:30:00).
+        Bạn là một chuyên gia quản trị dự án Agile và tối ưu năng suất cá nhân (Productivity & Agile Coach).
+        Nhiệm vụ của bạn là nhận thông tin của MỘT GIAI ĐOẠN CỤ THỂ (Phase) trong lộ trình tổng thể và bẻ nhỏ giai đoạn này thành danh sách các đầu việc thực thi (Executable Tasks) theo từng ngày.
 
-        
-        """
+        [DỮ LIỆU ĐẦU VÀO CỦA PHASE HIỆN TẠI]
+        - Khung lộ trình chung: {road_map_json}
+        - Giai đoạn cần xử lý: Phase {target_phase_number} - {target_phase_title}
+        - Mục tiêu đầu ra của Phase (Key Outcome): {target_phase_outcome}
+
+        [THÔNG TIN BỐI CẢNH & RÀNG BUỘC THỜI GIAN]
+        - Thời điểm hiện tại (Mốc tham chiếu): {current_time_str}
+        - Múi giờ: {timezone_str}
+        - Quỹ thời gian tối đa: {daily_hours_limit} giờ/ngày.
+        - Khung giờ ưu tiên bắt đầu: Từ {preferred_start_hour}:00 hàng ngày.
+        - Thời lượng lập lịch tối đa cho lần này: CHỈ lập lịch cho 7 ngày tiếp theo tính từ {current_time_str} (áp dụng nguyên tắc Rolling Wave Planning).
+
+        [NGUYÊN TẮC THIẾT KẾ TASK THỰC THI]
+        1. NGUYÊN TẮC HÀNH ĐỘNG VÀ ĐẦU RA:
+        - Tên công việc (title) phải bắt đầu bằng động từ hành động cụ thể và gắn với kết quả hữu hình (Ví dụ: "Viết module xác thực người dùng", "Giải 5 bài tập Array LeetCode"). Tránh các task chung chung như "Học lý thuyết", "Tìm hiểu tài liệu".
+        - Mỗi task phải có thời lượng từ 30 đến 90 phút (tối đa không quá 120 phút).
+        - Phần mô tả (notes) phải chứa: (1) Mục tiêu ngắn, (2) Tài liệu/đường dẫn hoặc tiêu chí hoàn thành, (3) Khung giờ đề xuất.
+
+        2. NGUYÊN TẮC ĐỆM THỜI GIAN (BUFFER DAYS - BẮT BUỘC):
+        - Trong chu kỳ 7 ngày, CHỈ xếp việc vào tối đa 5 ngày làm việc.
+        - BẮT BUỘC để trống 1 - 2 ngày (ưu tiên cuối tuần hoặc ngày thứ 6/thứ 7) làm "Catch-up/Buffer Day". KHÔNG gán bất kỳ task mới nào vào những ngày này để dự phòng cho việc xử lý task trễ hoặc ôn tập.
+
+        3. RÀNG BUỘC ĐỒNG BỘ GOOGLE TASKS & CALENDAR:
+        - Tất cả mốc thời gian PHẢI bắt đầu từ tương lai (sau {current_time_str}).
+        - Tổng estimated_minutes của các task trong một ngày <= {daily_hours_limit} * 60 phút.
+        - KHÔNG xếp lịch vào khung giờ ngủ (22:30 - 06:30).
+        - Khoảng cách giữa `calendar_start` và `calendar_end` phải khớp chính xác với `estimated_minutes`.
+         """
         config = types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=list[PhaseTaskSchedule],
@@ -64,8 +72,8 @@ class Generation():
             config=config
             
         )
-        adapter = TypeAdapter(list[PhaseTaskSchedule])
-        return adapter.validate_json(response.text)
+        
+        return PhaseTaskSchedule.model_validate_json(response.text)
 
 if __name__=="__main__":
     gen = Generation(api_key=API_KEY)
