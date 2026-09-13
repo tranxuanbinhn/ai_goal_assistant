@@ -17,12 +17,6 @@ class ExecutableTask(BaseModel):
         return f"{local_date.isoformat()}T00:00:00.000Z"
 class PhaseTaskSchedule(BaseModel):
     phase_number: int = Field(description="Giai đoạn tương ứng trong roadmap")
-    week_number: int = Field(description="Số thứ tự tuần đang thực hiện trong giai đoạn này (ví dụ: Tuần 1)")
-    key_outcome:str = Field(description="Kết quả cốt lõi, hữu hình và đo lường được cần đạt được khi kết thúc giai đoạn này. "
-            "Phải bao gồm sản phẩm cụ thể (artifact) hoặc chỉ số kiểm chứng (metrics). "
-            "Ví dụ: 'Hoàn thành ứng dụng To-Do List chạy bằng Vanilla JS' hoặc "
-            "'Đạt tối thiểu 80% điểm số trong bài mock-test 50 câu về SQL Joins'. "
-            "Tuyệt đối không dùng các câu chung chung như 'Hiểu kiến thức cơ bản'.")
-    phase_description: str = Field(description="Mô tả tổng quan về phase này trong roadmap")
+    week_number: int = Field(description="Số thứ tự tuần đang thực hiện trong giai đoạn này (VD: 1)")
     week_start_date: date = Field(description="Ngày Thứ Hai bắt đầu tuần này (YYYY-MM-DD)")
-    tasks: List[ExecutableTask] = Field(description="Danh sách 4-6 công việc cụ thể phân bổ từ Thứ Hai đến Thứ Sáu (chừa cuối tuần làm ngày đệm)")
+    tasks: List[ExecutableTask] = Field(description="Danh sách 4-6 công việc cụ thể phân bổ từ Thứ Hai đến Thứ Sáu")

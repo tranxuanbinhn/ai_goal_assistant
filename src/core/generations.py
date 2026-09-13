@@ -7,7 +7,9 @@ import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from pydantic import TypeAdapter
+from src.core.logging.logger_config import setup_logger
 load_dotenv()
+logger = setup_logger()
 API_KEY =os.getenv("GEMINI_API_KEY")
 class Generation():
     def __init__(self, api_key:str | None):
@@ -24,27 +26,40 @@ class Generation():
         )
         response = chat.send_message(promt)
         return RoadmapOverview.model_validate_json(response.text)
-    def generateTask(self,roadMapOvervieww:RoadmapOverview, target_phase_number:int, target_phase_title:str,target_phase_outcome:str, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh" )-> PhaseTaskSchedule:
+    def generateTask(self,roadMapOvervieww:RoadmapOverview, target_phase_number:int,week_number:int = 1, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh" )-> PhaseTaskSchedule:
+        current_phase = next (
+           (p for p in roadMapOvervieww.phase_task if p.phase_number == target_phase_number), None 
+        )
+        if not current_phase:
+            logger.debug("Khong the tim ra phase")
+            raise "Khong tim ra phase"
         now = datetime.now(ZoneInfo(timezone_str))
         current_time_str = now.strftime("%Y-%m-%d %H:%M:%S (%A)")
-        road_map_json = roadMapOvervieww.model_dump_json(indent=2)
+        tz_offset = now.strftime("%z")
+        formatted_tz_offset = f"{tz_offset[:3]}:{tz_offset[3:]}"
+
+        roadmap_summary = {
+            "goal_title":roadMapOvervieww.goal_title,
+            "current_phase":f"{current_phase.phase_number}: {current_phase.phase_title}",
+            "phase_duration_days":current_phase.duration_days,
+            "phase_key_outcome":current_phase.key_outcome
+        }
 
         prompt = f"""
         Bạn là một chuyên gia quản trị dự án Agile và tối ưu năng suất cá nhân (Productivity & Agile Coach).
         Nhiệm vụ của bạn là nhận thông tin của MỘT GIAI ĐOẠN CỤ THỂ (Phase) trong lộ trình tổng thể và bẻ nhỏ giai đoạn này thành danh sách các đầu việc thực thi (Executable Tasks) theo từng ngày.
 
         [DỮ LIỆU ĐẦU VÀO CỦA PHASE HIỆN TẠI]
-        - Khung lộ trình chung: {road_map_json}
-        - Giai đoạn cần xử lý: Phase {target_phase_number} - {target_phase_title}
-        - Mục tiêu đầu ra của Phase (Key Outcome): {target_phase_outcome}
+        - Mục tiêu tổng quát: {roadmap_summary['goal_title']}
+        - Giai đoạn thực hiện: Phase {roadmap_summary['current_phase']}
+        - Kết quả đầu ra bắt buộc (Key Outcome): {roadmap_summary['phase_key_outcome']}
 
-        [THÔNG TIN BỐI CẢNH & RÀNG BUỘC THỜI GIAN]
-        - Thời điểm hiện tại (Mốc tham chiếu): {current_time_str}
-        - Múi giờ: {timezone_str}
+        [RÀNG BUỘC THỜI GIAN]
+        - Mốc thời gian tham chiếu hiện tại: {current_time_str}
+        - Múi giờ: {timezone_str} (Offset: {formatted_tz_offset})
         - Quỹ thời gian tối đa: {daily_hours_limit} giờ/ngày.
         - Khung giờ ưu tiên bắt đầu: Từ {preferred_start_hour}:00 hàng ngày.
-        - Thời lượng lập lịch tối đa cho lần này: CHỈ lập lịch cho 7 ngày tiếp theo tính từ {current_time_str} (áp dụng nguyên tắc Rolling Wave Planning).
-
+        - Giới hạn lập lịch: CHỈ xếp lịch cho 7 ngày tới kể từ {current_time_str}.
         [NGUYÊN TẮC THIẾT KẾ TASK THỰC THI]
         1. NGUYÊN TẮC HÀNH ĐỘNG VÀ ĐẦU RA:
         - Tên công việc (title) phải bắt đầu bằng động từ hành động cụ thể và gắn với kết quả hữu hình (Ví dụ: "Viết module xác thực người dùng", "Giải 5 bài tập Array LeetCode"). Tránh các task chung chung như "Học lý thuyết", "Tìm hiểu tài liệu".
@@ -63,7 +78,7 @@ class Generation():
          """
         config = types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    response_schema=list[PhaseTaskSchedule],
+                    response_schema=PhaseTaskSchedule,
                     temperature=0.2
                 )
         response = self.client.models.generate_content(
@@ -80,5 +95,4 @@ if __name__=="__main__":
     promt = "Hãy tạo một lộ trình tổng quan (Roadmap Overview) học lập trình Backend với Python cho người mới bắt đầu từ con số 0 trong vòng 6 tháng"
     rs = gen.generateRoadmap(promt=promt)
     print(rs)
-    listtask = gen.generatePhaseTask(roadMapOvervieww=rs)
-    print(f"listtask: {listtask}")
+    
