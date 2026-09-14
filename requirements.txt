@@ -2,3 +2,5 @@ pydantic
 google-genai
 python-dotenv
 tzdata
+psycopg2-binary
+SQLAlchemy
