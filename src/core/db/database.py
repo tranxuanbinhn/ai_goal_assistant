@@ -13,7 +13,8 @@ def init_db():
     id INTEGER PRIMARY KEY,
     goal_title VARCHAR(255) NOT NULL,
     summary VARCHAR(255) NOT NULL,
-    total_estimated_days INTEGER NOT NULL
+    total_estimated_days INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS phase_overview(
@@ -22,15 +23,20 @@ def init_db():
         phase_title VARCHAR(255) NOT NULL,
         phase_description VARCHAR(255),
         duration_days INTEGER NOT NULL,
-        key_outcome VARCHAR(255)
-        road_map_id INTEGER REFERENCES road_map(id)
+        key_outcome VARCHAR(255),
+        road_map_id INTEGER REFERENCES road_map(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
         );
 
     CREATE TABLE IF NOT EXISTS phase_task(
         id INTEGER PRIMARY KEY,
         phase_number INTEGER NOT NULL,
         week_number INTEGER NOT NULL,
-        week_start_date DATE
+        week_start_date DATE,
+        phase_overview_id INTEGER REFERENCES phase_overview(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
         );
 
     CREATE TABLE IF NOT EXISTS task(
@@ -38,7 +44,10 @@ def init_db():
         title VARCHAR(255) NOT NULL,
         notes VARCHAR(255),
         calendar_start TIMESTAMPTZ NOT NULL,
-        calendar_end TIMESTAMPTZ NOT NULL
+        calendar_end TIMESTAMPTZ NOT NULL,
+        phase_task_id INTEGER REFERENCES phase_task (id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
         );
 """
     with engine.begin() as conn:
