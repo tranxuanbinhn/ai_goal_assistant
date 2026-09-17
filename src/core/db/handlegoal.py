@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
-from core.models.RoadMap import PhaseOverview, RoadmapOverview
-from core.models.Task import ExecutableTask, PhaseTaskSchedule
+from src.core.models.RoadMap import PhaseOverview, RoadmapOverview
+from src.core.models.Task import ExecutableTask, PhaseTaskSchedule
 
 
 def get_all_roadmaps(db_session:Session):
@@ -19,9 +19,9 @@ def save_roadmaps(db_session:Session, roadmap:RoadmapOverview):
     db_session.commit()
 
 def get_phase_overview_of_road_map(db_session:Session, road_map_id:int):
-    query = """
+    query = text("""
     SELECT * FROM phase_overview WHERE road_map_id = :road_map_id
-    """
+    """)
     return db_session.execute(query, {"road_map_id":road_map_id}).mappings().all()
     
 def save_phase_overview_of_road_map(db_session:Session, road_map_id:int, phase_overview:PhaseOverview):
@@ -34,9 +34,9 @@ def save_phase_overview_of_road_map(db_session:Session, road_map_id:int, phase_o
     db_session.commit()
 
 def get_phase_task_of_phase_overview(db_session:Session, phase_overview_id:int):
-    query = """
+    query = text("""
     SELECT * FROM phase_task WHERE phase_overview_id = :phase_overview_id
-    """
+    """)
     return db_session.execute(query, {"phase_overview_id":phase_overview_id}).mappings().all()
 
 def save_phase_task_of_phase_overview(db_session:Session, phase_overview_id:int, phase_task:PhaseTaskSchedule):
@@ -49,9 +49,9 @@ def save_phase_task_of_phase_overview(db_session:Session, phase_overview_id:int,
     db_session.commit()
 
 def get_task_of_phase_task(db_session:Session, phase_task_id:int):
-    query = """
+    query = text("""
     SELECT * FROM task WHERE phase_task_id = :phase_task_id
-    """
+    """)
     return db_session.execute(query, {"phase_task_id":phase_task_id}).mappings().all()
 
 def save_task_of_phase_task(db_session:Session, phase_task_id:int, executable_Task:ExecutableTask):

@@ -10,7 +10,7 @@ SessionLocal = sessionmaker(autoflush=False, bind=engine)
 def init_db():
     create_table_query = """
     CREATE TABLE IF NOT EXISTS road_map(
-    id INTEGER PRIMARY KEY,
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     goal_title VARCHAR(255) NOT NULL,
     summary VARCHAR(255) NOT NULL,
     total_estimated_days INTEGER NOT NULL,
@@ -18,7 +18,7 @@ def init_db():
     );
 
     CREATE TABLE IF NOT EXISTS phase_overview(
-        id INTEGER PRIMARY KEY,
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         phase_number INTEGER NOT NULL,
         phase_title VARCHAR(255) NOT NULL,
         phase_description VARCHAR(255),
@@ -30,7 +30,7 @@ def init_db():
         );
 
     CREATE TABLE IF NOT EXISTS phase_task(
-        id INTEGER PRIMARY KEY,
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         phase_number INTEGER NOT NULL,
         week_number INTEGER NOT NULL,
         week_start_date DATE,
@@ -40,7 +40,7 @@ def init_db():
         );
 
     CREATE TABLE IF NOT EXISTS task(
-        id INTEGER PRIMARY KEY,
+        id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         notes VARCHAR(255),
         calendar_start TIMESTAMPTZ NOT NULL,

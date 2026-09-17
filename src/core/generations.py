@@ -1,6 +1,7 @@
 from google.genai import types
 from google import genai
 from dotenv import load_dotenv
+from src.core.db.handlegoal import get_all_roadmaps, get_phase_overview_of_road_map, get_phase_task_of_phase_overview, get_task_of_phase_task, save_phase_overview_of_road_map, save_phase_task_of_phase_overview, save_roadmaps, save_task_of_phase_task
 from src.core.models.Task import PhaseTaskSchedule
 from src.core.models.RoadMap import RoadmapOverview
 import os
@@ -8,9 +9,12 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from pydantic import TypeAdapter
 from src.core.logging.logger_config import setup_logger
+from src.core.db.database import init_db, SessionLocal
 load_dotenv()
 logger = setup_logger()
+session = SessionLocal()
 API_KEY =os.getenv("GEMINI_API_KEY")
+init_db = init_db()
 class Generation():
     def __init__(self, api_key:str | None):
         self.client = genai.Client(api_key=api_key)
@@ -91,8 +95,29 @@ class Generation():
         return PhaseTaskSchedule.model_validate_json(response.text)
 
 if __name__=="__main__":
-    gen = Generation(api_key=API_KEY)
-    promt = "Hãy tạo một lộ trình tổng quan (Roadmap Overview) học lập trình Backend với Python cho người mới bắt đầu từ con số 0 trong vòng 6 tháng"
-    rs = gen.generateRoadmap(promt=promt)
-    print(rs)
+    #gen = Generation(api_key=API_KEY)
+    #promt = "Hãy tạo một lộ trình tổng quan (Roadmap Overview) học lập trình Backend với Python cho người mới bắt đầu từ con số 0 trong vòng 6 tháng"
+    #rs = gen.generateRoadmap(promt=promt)
+    ##print(rs)
+    #rs_task = gen.generateTask(roadMapOvervieww=rs,target_phase_number=1)
+    #print(f"rs_task {rs_task}")
     
+    #save_roadmaps(session,rs)
+    print("***-***")
+    #print(get_all_roadmaps(session))
+
+    #list_phase_task = rs.phase_task
+    #for phase_task in list_phase_task:
+    #    save_phase_overview_of_road_map(session, 1, phase_task)
+    #save_phase_overview_of_road_map(session, 1, )
+    #print("In ra man hinh phase overview")
+    #print(get_phase_overview_of_road_map(session, 1))
+    
+    #print("Phase task")
+    #print(get_phase_task_of_phase_overview(db_session=session, phase_overview_id=1))
+    #save_phase_task_of_phase_overview(db_session=session,phase_overview_id=1, phase_task=rs_task)
+    
+    #for task in rs_task.tasks:
+    #    save_task_of_phase_task(db_session=session, phase_task_id=1, executable_Task=task)
+    print("get task")    
+    print(get_task_of_phase_task(db_session=session, phase_task_id=1))
