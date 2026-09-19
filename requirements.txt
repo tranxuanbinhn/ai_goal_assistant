@@ -4,3 +4,7 @@ python-dotenv
 tzdata
 psycopg2-binary
 SQLAlchemy
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
