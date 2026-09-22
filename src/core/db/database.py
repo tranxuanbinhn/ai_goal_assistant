@@ -11,6 +11,7 @@ def init_db():
     create_table_query = """
     CREATE TABLE IF NOT EXISTS road_map(
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    google_tasklist_id VARCHAR(255),
     goal_title VARCHAR(255) NOT NULL,
     summary VARCHAR(255) NOT NULL,
     total_estimated_days INTEGER NOT NULL,

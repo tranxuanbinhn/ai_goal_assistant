@@ -62,3 +62,24 @@ def save_task_of_phase_task(db_session:Session, phase_task_id:int, executable_Ta
     """)
     db_session.execute(query, {"title":executable_Task.title, "notes":executable_Task.notes,"calendar_start":executable_Task.calendar_start, "calendar_end":executable_Task.calendar_end,"phase_task_id":phase_task_id})
     db_session.commit()
+
+def get_list_task_id_from_road_map(db_session:Session, road_map_id:str):
+    query = text(
+        """
+        SELECT google_tasklist_id FROM road_map
+        WHERE id = :road_map_id
+        """)
+    return db_session.execute(query, {"road_map_id":road_map_id}).mappings().first()
+
+def update_list_task_id_for_road_map(db_session:Session, road_map_id:str, google_tasklist_id:str):
+    query = text(
+        """
+        UPDATE road_map
+        SET google_tasklist_id = :google_tasklist_id
+        WHERE id = :road_map_id
+        RETURNING *
+        """)
+    result = db_session.execute(query, {"road_map_id":road_map_id, "google_tasklist_id":google_tasklist_id})
+    db_session.commit()
+    return result.mappings().first()
+    

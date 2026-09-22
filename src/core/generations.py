@@ -1,7 +1,7 @@
 from google.genai import types
 from google import genai
 from dotenv import load_dotenv
-from src.core.db.handlegoal import get_all_roadmaps, get_phase_overview_of_road_map, get_phase_task_of_phase_overview, get_task_of_phase_task, save_phase_overview_of_road_map, save_phase_task_of_phase_overview, save_roadmaps, save_task_of_phase_task
+from src.core.db.handlegoal import get_all_roadmaps, get_phase_overview_of_road_map, get_phase_task_of_phase_overview, get_task_of_phase_task, save_phase_overview_of_road_map, save_phase_task_of_phase_overview, save_roadmaps, save_task_of_phase_task,update_list_task_id_for_road_map, get_list_task_id_from_road_map
 from src.core.models.Task import PhaseTaskSchedule
 from src.core.models.RoadMap import RoadmapOverview
 import os
@@ -98,12 +98,12 @@ if __name__=="__main__":
     #gen = Generation(api_key=API_KEY)
     #promt = "Hãy tạo một lộ trình tổng quan (Roadmap Overview) học lập trình Backend với Python cho người mới bắt đầu từ con số 0 trong vòng 6 tháng"
     #rs = gen.generateRoadmap(promt=promt)
-    ##print(rs)
+    #print(rs)
     #rs_task = gen.generateTask(roadMapOvervieww=rs,target_phase_number=1)
     #print(f"rs_task {rs_task}")
     
     #save_roadmaps(session,rs)
-    print("***-***")
+    #print("***-***")
     #print(get_all_roadmaps(session))
 
     #list_phase_task = rs.phase_task
@@ -121,3 +121,7 @@ if __name__=="__main__":
     #    save_task_of_phase_task(db_session=session, phase_task_id=1, executable_Task=task)
     print("get task")    
     print(get_task_of_phase_task(db_session=session, phase_task_id=1))
+    #MTAzODI0MTg2MzkyMjcxMTExODI6MDow
+    #update_list_t_id=update_list_task_id_for_road_map(db_session=session, road_map_id=1,google_tasklist_id= "MTAzODI0MTg2MzkyMjcxMTExODI6MDow")
+    list_task_id = get_list_task_id_from_road_map(db_session=session, road_map_id=1)
+    print(f'list_task_id {list_task_id}')

@@ -74,6 +74,8 @@ if __name__ == "__main__":
     google_task = GoogleTask(CREDENTAILS_FILE, TOKEN_FILE)
     #rs1 = google_task.create_task_list("Hoc tap")
     #print(f"rs {rs1}")
-    #rs2 = google_task.get_all_task_list()
-    #print(rs2)
-    google_task.create_google_task("Hoc tap", task_list_id='aXV6Q0c1dEt2ZFQ2TmRHSw')
+    rs2 = google_task.get_all_task_list()
+    print(rs2)
+    print(rs2[0]['id'])
+    #google_task.create_google_task("Hoc tap", task_list_id='aXV6Q0c1dEt2ZFQ2TmRHSw')
+    
