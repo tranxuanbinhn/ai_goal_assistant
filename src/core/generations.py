@@ -6,31 +6,32 @@ from src.core.models.Task import PhaseTaskSchedule
 from src.core.models.RoadMap import RoadmapOverview
 import os
 from datetime import datetime
+from src.core.db.database import init_db, AsyncSessionLocal
 from zoneinfo import ZoneInfo
 from pydantic import TypeAdapter
 from src.core.logging.logger_config import setup_logger
-from src.core.db.database import init_db, SessionLocal
+
 load_dotenv()
 logger = setup_logger()
-session = SessionLocal()
+session = AsyncSessionLocal()
 API_KEY =os.getenv("GEMINI_API_KEY")
-init_db = init_db()
+
 class Generation():
     def __init__(self, api_key:str | None):
         self.client = genai.Client(api_key=api_key)
-        
-    def generateRoadmap(self, promt:str)->RoadmapOverview:
+        self.model = os.getenv("MODEL")
+    async def generateRoadmap(self, promt:str)->RoadmapOverview:
         config = types.GenerateContentConfig(
             response_mime_type="application/json",
             response_schema=RoadmapOverview
         )
-        chat = self.client.chats.create(
-            model="gemini-3.5-flash",
+        chat = self.client.aio.chats.create(
+            model=self.model,
             config=config,
         )
-        response = chat.send_message(promt)
+        response = await chat.send_message(promt)
         return RoadmapOverview.model_validate_json(response.text)
-    def generateTask(self,roadMapOvervieww:RoadmapOverview, target_phase_number:int,week_number:int = 1, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh" )-> PhaseTaskSchedule:
+    async def generateTask(self,roadMapOvervieww:RoadmapOverview, target_phase_number:int,week_number:int = 1, preferred_start_hour: int = 19 ,daily_hours_limit: float = 2.0,timezone_str: str = "Asia/Ho_Chi_Minh" )-> PhaseTaskSchedule:
         current_phase = next (
            (p for p in roadMapOvervieww.phase_task if p.phase_number == target_phase_number), None 
         )
@@ -85,8 +86,8 @@ class Generation():
                     response_schema=PhaseTaskSchedule,
                     temperature=0.2
                 )
-        response = self.client.models.generate_content(
-            model="gemini-3.5-flash",
+        response = await self.client.aio.models.generate_content(
+            model=self.model,
             contents= prompt,
             config=config
             
