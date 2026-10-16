@@ -23,7 +23,7 @@ class GoogleTask():
        self.service = service
 
     @classmethod
-    async def creare (cls,credentials_file:str, token_file:str, scopes:list[str]):
+    async def create (cls,credentials_file:str, token_file:str, scopes:list[str]):
         def _get_service_sync():
             creds = None
             if os.path.exists(token_file):

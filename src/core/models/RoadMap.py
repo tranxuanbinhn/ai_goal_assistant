@@ -7,6 +7,7 @@ class PhaseOverview(BaseModel):
     phase_title: str = Field(description="Tên ngắn gọn của giai đoạn (VD: 'Nền tảng TypeScript & Kiến trúc Test')")
     phase_description: str = Field(description="Mô tả trọng tâm chiến lược của giai đoạn này")
     duration_days: int = Field(description="Thời lượng ước tính của phase (VD: 14, 21, 28 ngày)")
+    
     key_outcome: str = Field(
         description=(
             "Kết quả cốt lõi, hữu hình và đo lường được cần đạt được khi kết thúc giai đoạn này. "
