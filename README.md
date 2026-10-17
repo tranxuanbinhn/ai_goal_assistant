@@ -192,3 +192,6 @@ Quy trình đề xuất:
 
 ---
 
+
+Link vidoe demo
+https://youtu.be/GPNaCgTZVl8
