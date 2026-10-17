@@ -193,5 +193,5 @@ Quy trình đề xuất:
 ---
 
 
-Link vidoe demo
+Link video demo
 https://youtu.be/GPNaCgTZVl8
